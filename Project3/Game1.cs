@@ -7,12 +7,17 @@ namespace Project3
 {
     public class Game1 : Game
     {
+
+        KeyboardState keyboardOne = Keyboard.GetState();
+
+        KeyboardState keyboardTwo = Keyboard.GetState();
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         Texture2D ship;
         Vector2 shipPosition = new Vector2(400, 400);
-        float shipSpeed = 3;
+        int shipSpeed = 3;
         KeyboardState tangentbord = Keyboard.GetState();
 
         Texture2D background;
@@ -25,7 +30,11 @@ namespace Project3
         Texture2D BulletBild;
         Rectangle BulletRectangle;
 
+        bool shoot = false;
+
         KeyboardState tangentBord = Keyboard.GetState();
+
+        Dictionary<string, int> settings = new Dictionary<string, int>();
 
         public Game1()
         {
@@ -35,6 +44,9 @@ namespace Project3
 
         protected override void Initialize()
         {
+
+            settings["shootSpeed"] = 20;
+
             for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 3; y++)
@@ -58,23 +70,57 @@ namespace Project3
 
             BulletBild = Content.Load<Texture2D>("bullet");
 
-            BulletRectangle = new Rectangle(400, 400, BulletBild.Width / 2, BulletBild.Height / 2);
+            BulletRectangle = new Rectangle(400, 400, BulletBild.Width, BulletBild.Height); 
 
         }
 
+        
+
         protected override void Update(GameTime gameTime)
         {
-            tangentbord = Keyboard.GetState();
+            keyboardTwo = keyboardOne;
+            keyboardOne = Keyboard.GetState();
 
-            if (tangentbord.IsKeyDown(Keys.Left) || tangentbord.IsKeyDown(Keys.A))
+          if (keyboardOne.IsKeyDown(Keys.Left) && (shipPosition.X > 0))
             {
                 shipPosition.X -= shipSpeed;
+                if (!shoot)
+                {
+                    BulletRectangle.X -= shipSpeed;
+                }
             }
-            if (tangentbord.IsKeyDown(Keys.Right) || tangentbord.IsKeyDown(Keys.D))
+            if (keyboardOne.IsKeyDown(Keys.Right) && (shipPosition.X > 0))
             {
                 shipPosition.X += shipSpeed;
+                if (!shoot)
+                {
+                    BulletRectangle.X += shipSpeed;
+                }
             }
-                       
+
+            if (keyboardOne.IsKeyDown(Keys.Space) && (keyboardTwo.IsKeyUp(Keys.Space)))
+            {
+                shoot = true;
+            }
+
+            if (shoot)
+            { 
+                BulletRectangle.Y -= 5;
+            }
+
+            if (shoot)
+            {
+                if (BulletRectangle.Y > 0)
+                {
+                    BulletRectangle.Y -= settings["shootSpeed"];
+                }
+                else if (BulletRectangle.Y <= 0)
+                {
+                    shoot = false;
+                    BulletRectangle.Y = (int)shipPosition.X;
+                }
+            }
+               
             tangentBord = Keyboard.GetState();
 
             Vector2 temp;
@@ -91,11 +137,11 @@ namespace Project3
                 {
                     alienspeed *= -1;
                 }
-                alienpositioner[i] = temp; 
+                alienpositioner[i] = temp;
+
+
+
             }
-
-
-
 
             base.Update(gameTime);
             
@@ -118,10 +164,10 @@ namespace Project3
             }
             spriteBatch.End();
 
-
             spriteBatch.Begin();
-            spriteBatch.Draw(BulletBild, shipPosition, Color.White);
-            spriteBatch.End(); 
+            spriteBatch.Draw(BulletBild, BulletRectangle, Color.White);
+            spriteBatch.End();
+
             base.Draw(gameTime);
         }
     }
